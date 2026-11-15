@@ -7,7 +7,7 @@ import { llmStatus } from "./engine/llm";
 import { sarvamTranscribe } from "./engine/llm/sarvam";
 import { DEMO_CUSTOMER, DEMO_MERCHANT, audit, getStore, now, resetStore } from "./engine/store";
 import { simulate, tick } from "./engine/verifier";
-import type { Snapshot } from "./types";
+import type { FailureCategory, HumanAction, Snapshot } from "./types";
 
 /**
  * Server functions. Handlers run only on the server; the browser gets an RPC
@@ -101,4 +101,65 @@ export const transcribe = createServerFn({ method: "POST" })
     } catch (err) {
       return { ok: false as const, error: err instanceof Error ? err.message : String(err) };
     }
+  });
+
+
+export const qualifyFailure = createServerFn({ method: "POST" })
+  .validator((d: unknown) =>
+    z
+      .object({
+        caseId: z.string(),
+        category: z.enum([
+          "BANK_GATEWAY_TIMEOUT",
+          "MERCHANT_SETTLEMENT_DELAY",
+          "DATA_INCONSISTENCY",
+          "SUSPECTED_FRAUD",
+          "USER_INPUT_ERROR",
+        ] satisfies FailureCategory[]),
+        action: z.enum([
+          "APPROVE_MANUAL_REFUND",
+          "CREDIT_MERCHANT_MANUALLY",
+          "TRIGGER_RECHECK",
+          "REQUEST_BANK_STATEMENT",
+          "REJECT_CLAIM",
+        ] satisfies HumanAction[]),
+        note: z.string().max(500).default(""),
+        reviewer: z.string().max(100).default("Ops Specialist"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const s = getStore();
+    const c = s.cases.find((x) => x.id === data.caseId);
+    if (!c) return { ok: false as const, error: "Case not found" };
+
+    c.qualification = {
+      category: data.category,
+      action: data.action,
+      note: data.note,
+      reviewer: data.reviewer,
+      at: now(s),
+    };
+
+    if (data.action === "APPROVE_MANUAL_REFUND" || data.action === "CREDIT_MERCHANT_MANUALLY") {
+      c.status = "CLOSED_VERIFIED";
+      c.closedAt = now(s);
+      c.owner = "Resolve";
+    } else if (data.action === "REJECT_CLAIM") {
+      c.status = "CLOSED_VERIFIED";
+      c.closedAt = now(s);
+    } else if (data.action === "REQUEST_BANK_STATEMENT") {
+      c.status = "NEEDS_INFO";
+    }
+    // TRIGGER_RECHECK leaves it in current state for the verifier to pick up
+
+    audit(s, {
+      caseId: c.id,
+      kind: "STATE",
+      actor: "code",
+      title: `Human qualified: ${data.category}`,
+      detail: `Action: ${data.action}. Note: "${data.note}" — ${data.reviewer}`,
+    });
+
+    return { ok: true as const };
   });

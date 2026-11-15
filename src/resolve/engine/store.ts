@@ -1,5 +1,5 @@
 import type { AuditEvent, BankResp, Case, Credit, Faults, Txn } from "../types";
-import { seedWorld } from "./seed";
+import { seedDemoCases, seedWorld } from "./seed";
 
 /**
  * In-memory state for the laptop demo. `world` is the synthetic ground truth
@@ -28,9 +28,9 @@ export type Store = {
 export const DEMO_CUSTOMER = "CUST-ANANYA";
 export const DEMO_MERCHANT = "MER-SHARMA";
 
-export function createStore(opts: { stepDelayMs?: number } = {}): Store {
+export function createStore(opts: { stepDelayMs?: number; seedDemo?: boolean } = {}): Store {
   const startedAt = Date.now();
-  return {
+  const s: Store = {
     world: seedWorld(startedAt),
     cases: [],
     audit: [],
@@ -44,6 +44,10 @@ export function createStore(opts: { stepDelayMs?: number } = {}): Store {
     caseSeq: 0,
     startedAt,
   };
+  if (opts.seedDemo) {
+    seedDemoCases(s);
+  }
+  return s;
 }
 
 export const now = (s: Store) => Date.now() + s.clockOffsetMs;
@@ -61,11 +65,11 @@ export const pause = (s: Store) =>
 const g = globalThis as unknown as { __resolveStore?: Store };
 
 export function getStore(): Store {
-  g.__resolveStore ??= createStore({ stepDelayMs: 650 });
+  g.__resolveStore ??= createStore({ stepDelayMs: 650, seedDemo: true });
   return g.__resolveStore;
 }
 
 export function resetStore(): Store {
-  g.__resolveStore = createStore({ stepDelayMs: 650 });
+  g.__resolveStore = createStore({ stepDelayMs: 650, seedDemo: true });
   return g.__resolveStore;
 }

@@ -110,11 +110,36 @@ export type Case = {
   recheck: { count: number; max: number; nextAt: number | null };
   summary: string | null; // handoff summary, written by the model
   summaryBy: string | null;
+  qualification: Qualification | null;
   messages: Message[];
   createdAt: number;
   updatedAt: number;
   closedAt: number | null;
   busy: boolean;
+};
+
+/* ---------- Human-in-the-loop qualification ---------- */
+
+export type FailureCategory =
+  | "BANK_GATEWAY_TIMEOUT"
+  | "MERCHANT_SETTLEMENT_DELAY"
+  | "DATA_INCONSISTENCY"
+  | "SUSPECTED_FRAUD"
+  | "USER_INPUT_ERROR";
+
+export type HumanAction =
+  | "APPROVE_MANUAL_REFUND"
+  | "CREDIT_MERCHANT_MANUALLY"
+  | "TRIGGER_RECHECK"
+  | "REQUEST_BANK_STATEMENT"
+  | "REJECT_CLAIM";
+
+export type Qualification = {
+  category: FailureCategory;
+  action: HumanAction;
+  note: string;
+  reviewer: string;
+  at: number;
 };
 
 /* ---------- Audit ---------- */

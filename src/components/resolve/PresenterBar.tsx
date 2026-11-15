@@ -70,6 +70,12 @@ export function PresenterBar({ snap }: { snap: Snapshot }) {
           >
             <FlaskConical className="size-3.5" aria-hidden /> Evals
           </Link>
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-1 rounded bg-brand-cyan/10 px-2 py-1 font-semibold text-brand-cyan hover:bg-brand-cyan/20"
+          >
+            HITL Dashboard
+          </Link>
         </nav>
       </div>
 

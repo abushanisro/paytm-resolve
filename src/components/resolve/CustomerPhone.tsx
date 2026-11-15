@@ -1,12 +1,15 @@
 import {
   ArrowLeft,
   Check,
+  CheckCircle2,
   CircleAlert,
+  FileText,
   Loader2,
   Mic,
   SendHorizontal,
   Sparkles,
   Square,
+  UserCheck,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -161,6 +164,10 @@ function AgentBubble({
         </div>
       )}
 
+      {isLast && (c.status === "ESCALATED" || c.qualification) && (
+        <HumanWorkflowCard c={c} />
+      )}
+
       {isLast && c.status === "NEEDS_INFO" && (
         <div className="space-y-1.5">
           {c.candidates.map((ref) => {
@@ -184,6 +191,66 @@ function AgentBubble({
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function HumanWorkflowCard({ c }: { c: Case }) {
+  const [uploaded, setUploaded] = useState(false);
+
+  if (c.qualification) {
+    const actionText =
+      c.qualification.action === "APPROVE_MANUAL_REFUND"
+        ? "Manual Refund Approved"
+        : c.qualification.action === "CREDIT_MERCHANT_MANUALLY"
+          ? "Merchant Ledger Credited"
+          : c.qualification.action === "TRIGGER_RECHECK"
+            ? "Re-check Forced"
+            : c.qualification.action === "REQUEST_BANK_STATEMENT"
+              ? "Bank Statement Requested"
+              : "Claim Rejected";
+
+    return (
+      <div className="rounded-xl border border-status-green/40 bg-status-green-soft/70 p-2.5 text-[12px] shadow-sm space-y-1.5">
+        <div className="flex items-center gap-1.5 font-bold text-status-green text-[11px]">
+          <UserCheck className="size-3.5" /> Specialist Decision: {actionText}
+        </div>
+        {c.qualification.note && (
+          <p className="rounded bg-background/90 p-2 text-[11px] italic text-foreground leading-snug">
+            "{c.qualification.note}"
+          </p>
+        )}
+        <p className="text-[10px] text-muted-foreground">
+          Verified by {c.qualification.reviewer} · Case updated
+        </p>
+        {c.qualification.action === "REQUEST_BANK_STATEMENT" && (
+          <div className="pt-1">
+            {uploaded ? (
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-status-green">
+                <CheckCircle2 className="size-3" /> Bank Statement Submitted
+              </span>
+            ) : (
+              <button
+                onClick={() => setUploaded(true)}
+                className="flex items-center justify-center gap-1.5 w-full rounded-lg bg-brand-cyan py-1 text-[11px] font-bold text-brand-navy shadow-sm hover:opacity-90"
+              >
+                <FileText className="size-3" /> Upload Statement / Screenshot
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-status-amber/40 bg-status-amber-soft/60 p-2.5 text-[11px] shadow-sm space-y-1">
+      <div className="flex items-center gap-1.5 font-bold text-status-amber">
+        <UserCheck className="size-3.5" /> Transferred to Human Specialist ({c.owner})
+      </div>
+      <p className="text-muted-foreground leading-snug">
+        This case has reached automated check boundaries. An operations engineer has been assigned to investigate and resolve it.
+      </p>
     </div>
   );
 }

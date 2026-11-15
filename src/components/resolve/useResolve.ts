@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getSnapshot, pickTxn, resetDemo, runSim, sendComplaint, setFault } from "@/resolve/api";
-import type { Faults, SimAction } from "@/resolve/types";
+import { getSnapshot, pickTxn, qualifyFailure, resetDemo, runSim, sendComplaint, setFault } from "@/resolve/api";
+import type { FailureCategory, Faults, HumanAction, SimAction } from "@/resolve/types";
 
 const KEY = ["resolve-snapshot"];
 
@@ -32,6 +32,10 @@ export function useActions() {
     },
     reset: async () => {
       await resetDemo();
+      await refresh();
+    },
+    qualify: async (caseId: string, category: FailureCategory, action: HumanAction, note: string, reviewer: string) => {
+      await qualifyFailure({ data: { caseId, category, action, note, reviewer } });
       await refresh();
     },
   };

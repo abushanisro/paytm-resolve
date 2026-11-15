@@ -40,6 +40,7 @@ export function newCase(s: Store, origin: Case["origin"], customerId: string): C
     recheck: { count: 0, max: RECHECK_DELAYS_MS.length, nextAt: null },
     summary: null,
     summaryBy: null,
+    qualification: null,
     messages: [],
     createdAt: at,
     updatedAt: at,

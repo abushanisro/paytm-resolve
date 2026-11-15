@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as CustomerRouteImport } from './routes/customer'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EvalsRouteImport } from './routes/evals'
 import { Route as MerchantRouteImport } from './routes/merchant'
 
@@ -30,6 +31,11 @@ const CustomerRoute = CustomerRouteImport.update({
   path: '/customer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EvalsRoute = EvalsRouteImport.update({
   id: '/evals',
   path: '/evals',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/console': typeof ConsoleRoute
   '/customer': typeof CustomerRoute
+  '/dashboard': typeof DashboardRoute
   '/evals': typeof EvalsRoute
   '/merchant': typeof MerchantRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/console': typeof ConsoleRoute
   '/customer': typeof CustomerRoute
+  '/dashboard': typeof DashboardRoute
   '/evals': typeof EvalsRoute
   '/merchant': typeof MerchantRoute
 }
@@ -60,21 +68,31 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/console': typeof ConsoleRoute
   '/customer': typeof CustomerRoute
+  '/dashboard': typeof DashboardRoute
   '/evals': typeof EvalsRoute
   '/merchant': typeof MerchantRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/console' | '/customer' | '/evals' | '/merchant'
+  fullPaths:
+    '/' | '/console' | '/customer' | '/dashboard' | '/evals' | '/merchant'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/console' | '/customer' | '/evals' | '/merchant'
-  id: '__root__' | '/' | '/console' | '/customer' | '/evals' | '/merchant'
+  to: '/' | '/console' | '/customer' | '/dashboard' | '/evals' | '/merchant'
+  id:
+    | '__root__'
+    | '/'
+    | '/console'
+    | '/customer'
+    | '/dashboard'
+    | '/evals'
+    | '/merchant'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConsoleRoute: typeof ConsoleRoute
   CustomerRoute: typeof CustomerRoute
+  DashboardRoute: typeof DashboardRoute
   EvalsRoute: typeof EvalsRoute
   MerchantRoute: typeof MerchantRoute
 }
@@ -102,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/evals': {
       id: '/evals'
       path: '/evals'
@@ -123,6 +148,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConsoleRoute: ConsoleRoute,
   CustomerRoute: CustomerRoute,
+  DashboardRoute: DashboardRoute,
   EvalsRoute: EvalsRoute,
   MerchantRoute: MerchantRoute,
 }
